@@ -8,7 +8,6 @@ using System.Text;
 using TestCore.Api.Exceptions.Middleware;
 using TestCore.Api.Services;
 using TestCore.Data;
-using TestCore.Data.Entities;
 using TestCore.Security.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,8 +22,6 @@ builder.Services
     .AddIdentityCore<User>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<IdentityDataContext>();
-//builder.Services
-//    .AddSqlServer<CoreDataContext>(builder.Configuration.GetConnectionString("Default"));
 builder.Services
     .AddDbContext<CoreDataContext>(options => 
         options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));

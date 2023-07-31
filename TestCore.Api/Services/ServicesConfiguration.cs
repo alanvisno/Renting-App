@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.HttpsPolicy;
 using TestCore.Api.Exceptions.Middleware;
 using TestCore.Api.Models.Car;
 using TestCore.Api.Models.Rent;

@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Net;
 using TestCore.Api.Models.Rent;
 using System.Net.Http.Headers;
-using Microsoft.Extensions.Configuration;
 
 namespace TesCore.Test.Integration.Rent
 {

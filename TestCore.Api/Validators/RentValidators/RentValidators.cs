@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using TestCore.Api.Models.Car;
 using TestCore.Api.Models.Rent;
 
 namespace TestCore.Api.Validators.RentValidators

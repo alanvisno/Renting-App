@@ -12,8 +12,8 @@ namespace TesCore.Test.Integration.Car
     [TestClass]
     public class CarApiTest
     {
-        private HttpClient _httpClient;
-        private TokenHelper _tokenHelper;
+        private readonly HttpClient _httpClient;
+        private readonly TokenHelper _tokenHelper;
 
         public CarApiTest()
         {
