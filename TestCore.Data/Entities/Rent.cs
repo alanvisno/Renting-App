@@ -11,7 +11,12 @@ namespace TestCore.Data.Entities
             ID = Guid.NewGuid();
             LogDate = DateTime.Now;
             Recharge = 0;
+            State = 0;
         }
+
+        [Column("State")]
+        [Required]
+        public int State { get; set; }
 
         [Column("LogDate")]
         [Required]

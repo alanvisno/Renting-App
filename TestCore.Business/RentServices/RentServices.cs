@@ -67,7 +67,7 @@ namespace TestCore.Business
             return await _context.Rents.Include(x => x.Car).FirstOrDefaultAsync(x => x.ID == rentId);
         }
 
-        public void CreateRent(Customer customer, Car car, decimal pricePerDay, DateTime deliveryDate, DateTime returnDate)
+        public void Create(Customer customer, Car car, decimal pricePerDay, DateTime deliveryDate, DateTime returnDate)
         {
             try
             {
@@ -79,6 +79,7 @@ namespace TestCore.Business
                     DeliveryDate = deliveryDate,
                     ReturnDate = returnDate
                 };
+                var state = new RentStatus.RentStatus(rent);
                 var result = _context.Rents.Add(rent);
                 _context.SaveChanges();
             }
@@ -92,15 +93,51 @@ namespace TestCore.Business
         {
             try
             {
-                rent.ReturnLogDate = DateTime.Now;
-                rent.ReturnProcessDate = returnDate;
-                rent.Recharge = GetDifference(returnDate, rent.ReturnDate, rent.Car.PricePerDay);
-                var result = _context.Rents.Update(rent);
+                var state = new RentStatus.RentStatus(rent);
+                var stateMessgae = state.MarkReturned();
+                //rent.ReturnLogDate = DateTime.Now;
+                if (stateMessgae.success)
+                { 
+                    
+                }
+                state.Rent.ReturnProcessDate = returnDate;
+                state.Rent.Recharge = GetDifference(returnDate, rent.ReturnDate, rent.Car.PricePerDay);
+                var result = _context.Rents.Update(state.Rent);
                 _context.SaveChanges();
             }
             catch(DbUpdateException ex) 
             {
                 throw new Exception(ex.Message);          
+            }
+        }
+
+        public async void Cancel(Rent rent)
+        {
+            try
+            {
+                var state = new RentStatus.RentStatus(rent);
+                state.Cancel();
+                var result = _context.Rents.Update(state.Rent);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async void Using(Rent rent)
+        {
+            try
+            {
+                var state = new RentStatus.RentStatus(rent);
+                state.MarkUsing();
+                var result = _context.Rents.Update(state.Rent);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }

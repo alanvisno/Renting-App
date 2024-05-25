@@ -67,7 +67,7 @@ namespace TestCore.Api.Controllers
                 throw new CustomException("Key not found", errors, HttpStatusCode.NotFound);
             }
 
-            _rentServices.CreateRent(customer, car, input.PricePerDay, input.DeliveryDate, input.ReturnDate);
+            _rentServices.Create(customer, car, input.PricePerDay, input.DeliveryDate, input.ReturnDate);
 
             return Results.Ok();
         }
