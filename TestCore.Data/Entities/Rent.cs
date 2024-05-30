@@ -13,6 +13,10 @@ namespace TestCore.Data.Entities
             Recharge = 0;
         }
 
+        [Column("BusinessID")]
+        [Required]
+        public long BusinessID { get; set; }
+
         [Column("LogDate")]
         [Required]
         public DateTime LogDate { get; set; }

@@ -11,12 +11,14 @@ namespace TestCore.Test.Customer
     [TestClass]
     public class CustomerApiTest
     {
-        private HttpClient _httpClient;
-        private TokenHelper _tokenHelper;
+        private readonly HttpClient _httpClient;
+        private readonly TokenHelper _tokenHelper;
+
+        private const string _customerListUrl = "/api/Customer/Search";
 
         public CustomerApiTest()
         {
-            var app = AppHelper.GetAppWithSettings();
+            var app = AppHelper.ConfigureApp();
             _httpClient = app.CreateClient();
             _tokenHelper = new TokenHelper(_httpClient, app);
         }
@@ -36,7 +38,7 @@ namespace TestCore.Test.Customer
             var request = new CustomerSearchRequest { Name = name };
             var jsonRequest = JsonConvert.SerializeObject(request);
             var httpContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/api/Customer/Search", httpContent);
+            var response = await _httpClient.PostAsync(_customerListUrl, httpContent);
 
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -48,7 +50,7 @@ namespace TestCore.Test.Customer
             var request = new CustomerSearchRequest { Name = name };
             var jsonRequest = JsonConvert.SerializeObject(request);
             var httpContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/api/Customer/Search", httpContent);
+            var response = await _httpClient.PostAsync(_customerListUrl, httpContent);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var result = await response.Content.ReadFromJsonAsync<CustomerListResponse>();

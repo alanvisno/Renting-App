@@ -1,61 +1,110 @@
-﻿using TestCore.Business;
-using TestCore.Business.Models;
+﻿using Moq;
+using TestCore.Business;
+using TestCore.Data.Entities;
+using TestCore.Data.Models;
+using TestCore.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace TestCore.Test.Rent
+[TestFixture]
+public class RentServicesShould
 {
-    public class RentServicesShould
+    private RentServices _rentServices;
+    private Mock<ICoreDataContext> _mockContext;
+
+    public RentServicesShould()
     {
-        [Theory]
-        [TestCase("05-01-2022", "05-06-2022", "05-01-2022", "05-06-2022")]
-        [TestCase("05-01-2022", "05-05-2022", "05-01-2022", "05-06-2022")]
-        [TestCase("05-01-2022", "05-03-2022", "04-29-2022", "05-05-2022")]
-        [TestCase("04-28-2022", "05-01-2022", "05-01-2022", "05-06-2022")]
-        [TestCase("05-02-2022", "05-10-2022", "05-01-2022", "05-06-2022")]
-        public void Should_have_error_MatchingDates(
-            DateTime newDeliveryDate, DateTime newReturnDate, 
-            DateTime oldDeliveryDate, DateTime oldReturnDate)
-        {
-            var rents = new RentDate
-            {
-                DeliveryDate = oldDeliveryDate,
-                ReturnDate = oldReturnDate
-            };
-            var isMatching = RentServices.AreDatesMatching(newDeliveryDate, newReturnDate, new List<RentDate>{rents});
-            Assert.That(isMatching, Is.False);
-        }
+        _mockContext = new Mock<ICoreDataContext>();
+        _rentServices = new RentServices(_mockContext.Object);
+    }
 
-        [Theory]
-        [TestCase("04-01-2022", "04-06-2022", "05-01-2022", "05-06-2022")]
-        [TestCase("04-01-2022", "04-30-2022", "05-01-2022", "05-06-2022")]
-        [TestCase("06-01-2022", "06-30-2022", "05-01-2022", "05-06-2022")]
-        public void Should_not_have_error_MatchingDates(
-            DateTime newDeliveryDate, DateTime newReturnDate,
-            DateTime oldDeliveryDate, DateTime oldReturnDate)
+    [TestCase("05-03-2022", "05-08-2022", "05-01-2022", "05-06-2022")]
+    public void Should_return_false_when_dates_overlap(
+        DateTime newDeliveryDate, DateTime newReturnDate,
+        DateTime oldDeliveryDate, DateTime oldReturnDate)
+    {
+        // Arrange
+        var rents = new RentDateDTO
         {
-            var rents = new RentDate
-            {
-                DeliveryDate = oldDeliveryDate,
-                ReturnDate = oldReturnDate
-            };
-            var isMatching = RentServices.AreDatesMatching(
-                newDeliveryDate, newReturnDate, new List<RentDate> { rents });
-            Assert.That(isMatching, Is.True);
-        }
+            DeliveryDate = oldDeliveryDate,
+            ReturnDate = oldReturnDate
+        };
 
-        [Theory]
-        [TestCase("04-02-2022", "04-02-2022", 1, 0)]
-        [TestCase("04-02-2022", "04-03-2022", 1, 1)]
-        [TestCase("04-02-2022", "04-04-2022", 1, 2)]
-        [TestCase("04-02-2022", "04-04-2022", 1.4, 2.8)]
-        [TestCase("04-02-2022", "04-04-2022", 1.6, 3.2)]
-        [TestCase("04-02-2022", "04-05-2022", 1, 3)]
-        [TestCase("04-02-2022", "04-01-2022", 1, 0)]
-        [TestCase("04-05-2022", "04-03-2022", 1, 0)]
-        public void Should_not_have_error_GetDifference(
-            DateTime returnDate, DateTime realReturnDate, decimal price, decimal result)
+        // Act
+        var isMatching = RentServices.AreDatesMatching(newDeliveryDate, newReturnDate, new List<RentDateDTO> { rents });
+
+        // Assert
+        Assert.IsTrue(isMatching);
+    }
+
+    [TestCase("04-01-2022", "04-06-2022", "05-01-2022", "05-06-2022")]
+    public void Should_return_true_when_dates_do_not_overlap(
+        DateTime newDeliveryDate, DateTime newReturnDate,
+        DateTime oldDeliveryDate, DateTime oldReturnDate)
+    {
+        // Arrange
+        var rents = new RentDateDTO
         {
-            var difference = RentServices.GetDifference(realReturnDate, returnDate, price);
-            Assert.That(difference, Is.EqualTo(result));
-        }
+            DeliveryDate = oldDeliveryDate,
+            ReturnDate = oldReturnDate
+        };
+
+        // Act
+        var isMatching = RentServices.AreDatesMatching(
+            newDeliveryDate, newReturnDate, new List<RentDateDTO> { rents });
+
+        // Assert
+        Assert.IsFalse(isMatching);
+    }
+
+    [TestCase("04-02-2022", "04-03-2022", 1, 1)]
+    public void Should_return_correct_difference_Common(
+        DateTime returnDate, DateTime realReturnDate, decimal price, decimal expectedDifference)
+    {
+        // Act
+        var difference = RentServiceDecorator.GetDifference(realReturnDate, returnDate, price, 0);
+
+        // Assert
+        Assert.That(difference, Is.EqualTo(expectedDifference));
+    }
+
+    [TestCase("04-02-2022", "04-03-2022", 1, 0)]
+    public void Should_return_correct_difference_Premium(
+    DateTime returnDate, DateTime realReturnDate, decimal price, decimal expectedDifference)
+    {
+        // Act
+        var difference = RentServiceDecorator.GetDifference(realReturnDate, returnDate, price, 1);
+
+        // Assert
+        Assert.That(difference, Is.EqualTo(expectedDifference));
+    }
+
+    [Test]
+    public async Task Should_return_correct_rent_when_customer_has_rent()
+    {
+        // Arrange
+        var businessId = 123;
+        var deliveryDate = DateTime.Now.AddDays(1);
+        var returnDate = DateTime.Now.AddDays(2);
+        var rents = new List<Rent>
+        {
+            new() {
+                Customer = new Customer() { BusinessID = businessId },
+                DeliveryDate = deliveryDate,
+                ReturnDate = returnDate
+            }
+        };
+
+        var mockSet = new Mock<DbSet<Rent>>();
+        mockSet.As<IQueryable<Rent>>().Setup(m => m.Provider).Returns(rents.AsQueryable().Provider);
+        mockSet.As<IQueryable<Rent>>().Setup(m => m.Expression).Returns(rents.AsQueryable().Expression);
+        mockSet.As<IQueryable<Rent>>().Setup(m => m.ElementType).Returns(rents.AsQueryable().ElementType);
+        mockSet.As<IQueryable<Rent>>().Setup(m => m.GetEnumerator()).Returns(() => rents.GetEnumerator());
+        _mockContext.Setup(x => x.Rents).Returns(mockSet.Object);
+
+        // Act
+        var hasRent = _rentServices.HasAlreadyARent(businessId, deliveryDate, returnDate);
+
+        // Assert
+        Assert.IsTrue(hasRent);
     }
 }

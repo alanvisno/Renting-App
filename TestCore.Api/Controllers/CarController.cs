@@ -50,7 +50,6 @@ namespace TestCore.Api.Controllers
             var validationResult = await _createValidator.ValidateAsync(input);
             if (!validationResult.IsValid)
             {
-                //return Results.ValidationProblem(validationResult.ToDictionary());
                 var messages = validationResult.Errors.Select(x => x.ErrorMessage).ToList();
                 throw new CustomException("Validation Error", messages, HttpStatusCode.BadRequest);
             }

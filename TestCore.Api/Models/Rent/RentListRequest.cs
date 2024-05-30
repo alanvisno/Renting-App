@@ -2,6 +2,6 @@
 {
     public class RentListRequest
     {
-        public Guid CustomerId { get; set; }
+        public long CustomerId { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using System.Net;
 using TestCore.Api.Exceptions;
 using TestCore.Api.Models.Rent;
 using TestCore.Business;
+using TestCore.Data.Entities;
 
 namespace TestCore.Api.Controllers
 {
@@ -41,6 +42,7 @@ namespace TestCore.Api.Controllers
         /// <response code="200">Success</response>
         /// <response code="401">Customer or Car doesnt exist</response>
         /// <response code="400">Error Message</response>
+        /// <response code="409">The dates matches with other rent</response>
         [HttpPost]
         [Route("Create")]
         public async Task<IResult> Create(RentCreateRequest input)
@@ -58,16 +60,21 @@ namespace TestCore.Api.Controllers
                 var errors = new List<string>();
                 if (customer == null)
                 {
-                    errors.Add("Customer with " + input.CustomerId + " could not be found");
+                    errors.Add($"Customer with ID {input.CustomerId} could not be found.");
                 }
                 if (car == null)
                 {
-                    errors.Add("Car with " + input.CarId + " could not be found");
+                    errors.Add($"Car with ID {input.CarId} could not be found.");
                 }
                 throw new CustomException("Key not found", errors, HttpStatusCode.NotFound);
             }
 
-            _rentServices.CreateRent(customer, car, input.PricePerDay, input.DeliveryDate, input.ReturnDate);
+            if (_rentServices.HasAlreadyARent(customer.BusinessID, input.DeliveryDate, input.ReturnDate))
+            {
+                throw new ConflictException("The dates already matches with other rent.");
+            }
+
+            await _rentServices.CreateRentAsync(customer, car, input.PricePerDay, input.DeliveryDate, input.ReturnDate);
 
             return Results.Ok();
         }
@@ -75,25 +82,26 @@ namespace TestCore.Api.Controllers
         /// <summary>
         /// Return Car
         /// </summary>
-        /// <returns></returns>
+        /// <returns>total price</returns>
         /// <response code="200">Success</response>
         /// <response code="400">Error Message</response>
+        /// <response code="404">Rent not found</response>
         [HttpPut]
         [Route("Return")]
         public async Task<IResult> Return(RentReturnRequest input)
         {
-                var rent = await _rentServices.GetRent(input.RentId);
-                if (rent == null)
-                {
-                    throw new CustomException(
-                        "Key not found", 
-                        new List<string> { "Rent with " + input.RentId + " could not be found" }, 
-                        HttpStatusCode.NotFound);
-                }
+            var rent = await _rentServices.GetRent(input.RentId) ?? 
+                throw new CustomException(
+                    "Key not found", 
+                    new List<string> { "Rent with Id " + input.RentId + " could not be found" }, 
+                    HttpStatusCode.NotFound);
 
-                _rentServices.ReturnCar(rent, input.ReturnDate);
+            var premium = new PremiumCustomerDecorator(_rentServices, rent.Customer.Premium);
+            var common = new CommonCustomerDecorator(_rentServices, rent.Customer.Premium);
+            var total = await premium.ReturnCar(rent, input.ReturnDate) + //in case not, returns 0
+                        await common.ReturnCar(rent, input.ReturnDate); //in case not, returns 0
 
-                return Results.Ok();
+            return Results.Ok(total);
         }
     }
 }

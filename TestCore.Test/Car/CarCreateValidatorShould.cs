@@ -7,7 +7,6 @@ namespace TestCore.Test.Car
 {
     public class CarCreateValidatorShould
     {
-
         private readonly CarCreateValidator Validator;
         private readonly static ICarCreateValidatorBase _baseValues = new FixedCarCreateValidatorBase(DateTime.Now, -5, 0);
 

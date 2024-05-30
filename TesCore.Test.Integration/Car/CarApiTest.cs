@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -15,9 +13,12 @@ namespace TesCore.Test.Integration.Car
         private readonly HttpClient _httpClient;
         private readonly TokenHelper _tokenHelper;
 
+        private const string _carListUrl = "/api/Car/List";
+        private const string _carCreateUrl = "/api/Car/Create";
+
         public CarApiTest()
         {
-            var app = AppHelper.GetAppWithSettings();
+            var app = AppHelper.ConfigureApp();
             _httpClient = app.CreateClient();
             _tokenHelper = new TokenHelper(_httpClient, app);
         }
@@ -36,7 +37,7 @@ namespace TesCore.Test.Integration.Car
             var request = new CarListRequest { 
                 StartDate = DateTime.Parse(startDate), EndDate = DateTime.Parse(endDate) };
 
-            var response = await _httpClient.PostAsJsonAsync("/api/Car/List", request);
+            var response = await _httpClient.PostAsJsonAsync(_carListUrl, request);
             response.EnsureSuccessStatusCode();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
@@ -57,7 +58,7 @@ namespace TesCore.Test.Integration.Car
             };
             var jsonRequest = JsonConvert.SerializeObject(request);
             var httpContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/api/Car/List", httpContent);
+            var response = await _httpClient.PostAsync(_carListUrl, httpContent);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         }
@@ -77,7 +78,7 @@ namespace TesCore.Test.Integration.Car
                 PatentDate = DateTime.Now
             };
 
-            var response = await _httpClient.PostAsJsonAsync("/api/Car/Create", request);
+            var response = await _httpClient.PostAsJsonAsync(_carCreateUrl, request);
 
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -93,7 +94,7 @@ namespace TesCore.Test.Integration.Car
                 PatentDate = DateTime.Now.AddYears(-5)
             };
 
-            var response = await _httpClient.PostAsJsonAsync("/api/Car/Create", request);
+            var response = await _httpClient.PostAsJsonAsync(_carCreateUrl, request);
 
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }

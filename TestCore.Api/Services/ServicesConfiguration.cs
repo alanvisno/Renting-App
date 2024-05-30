@@ -7,6 +7,7 @@ using TestCore.Api.Validators.CarValidators;
 using TestCore.Api.Validators.RentValidators;
 using TestCore.Business;
 using TestCore.Business.CustomerServices;
+using TestCore.Data;
 
 namespace TestCore.Api.Services
 {
@@ -28,6 +29,7 @@ namespace TestCore.Api.Services
             //Main Initializers
             services.AddTransient<IAppInitializer, AppInitializer>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<ICoreDataContext, CoreDataContext>();
 
             services.AddTransient<ExceptionMiddleware>();
             services.AddMvc();

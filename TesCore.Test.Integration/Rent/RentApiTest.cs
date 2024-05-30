@@ -8,12 +8,16 @@ namespace TesCore.Test.Integration.Rent
     [TestClass]
     public class RentApiTest
     {
-        private HttpClient _httpClient;
-        private TokenHelper _tokenHelper;
+        private readonly HttpClient _httpClient;
+        private readonly TokenHelper _tokenHelper;
+
+        private const string _rentListUrl = "/api/Rent/List";
+        private const string _rentCreateUrl = "/api/Rent/Create";
+        private const string _rentReturnUrl = "/api/Rent/Return";
 
         public RentApiTest()
         {
-            var app = AppHelper.GetAppWithSettings();
+            var app = AppHelper.ConfigureApp();
             _httpClient = app.CreateClient();
             _tokenHelper = new TokenHelper(_httpClient, app);
         }
@@ -28,9 +32,9 @@ namespace TesCore.Test.Integration.Rent
         [TestMethod]
         public async Task Rent_List_Sucess()
         {
-            var customerId = Guid.NewGuid();
+            var customerId = 564564;
             var request = new RentListRequest { CustomerId = customerId };
-            var response = await _httpClient.PostAsJsonAsync("/api/Rent/List", request);
+            var response = await _httpClient.PostAsJsonAsync(_rentListUrl, request);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
@@ -44,13 +48,13 @@ namespace TesCore.Test.Integration.Rent
         {
             var request = new RentCreateRequest
             {
-                CustomerId = new Guid("9f0a285b-76f3-4705-ac5a-e3a9806fb2f4"),
-                CarId = new Guid("04a1799e-8e3b-4b20-81ad-54abf7532d59"),
+                CustomerId = 123,
+                CarId = 1234,
                 DeliveryDate = DateTime.Now.AddDays(1),
                 ReturnDate = DateTime.Now.AddDays(7),
                 PricePerDay = 45
             };
-            var response = await _httpClient.PostAsJsonAsync("/api/Rent/Create", request);
+            var response = await _httpClient.PostAsJsonAsync(_rentCreateUrl, request);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         }
@@ -62,7 +66,7 @@ namespace TesCore.Test.Integration.Rent
             {
                 //Empty
             };
-            var response = await _httpClient.PostAsJsonAsync("/api/Rent/Create", request);
+            var response = await _httpClient.PostAsJsonAsync(_rentCreateUrl, request);
 
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -72,13 +76,13 @@ namespace TesCore.Test.Integration.Rent
         {
             var request = new RentCreateRequest
             {
-                CustomerId = Guid.NewGuid(),
-                CarId = Guid.NewGuid(),
+                CustomerId = 123,
+                CarId = 1234,
                 DeliveryDate = DateTime.Now.AddDays(1),
                 ReturnDate = DateTime.Now.AddDays(7),
                 PricePerDay = 45
             };
-            var response = await _httpClient.PostAsJsonAsync("/api/Rent/Create", request);
+            var response = await _httpClient.PostAsJsonAsync(_rentCreateUrl, request);
 
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -88,10 +92,10 @@ namespace TesCore.Test.Integration.Rent
         {
             var request = new RentReturnRequest
             {
-                RentId = new Guid("d52368e5-b829-46ba-8f5e-2d31d13946ed"),
+                RentId = 1235,
                 ReturnDate = DateTime.Now
             };
-            var response = await _httpClient.PutAsJsonAsync("/api/Rent/Return", request);
+            var response = await _httpClient.PutAsJsonAsync(_rentReturnUrl, request);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         }
@@ -101,10 +105,10 @@ namespace TesCore.Test.Integration.Rent
         {
             var request = new RentReturnRequest
             {
-                RentId = Guid.NewGuid(),
+                RentId = 1235,
                 ReturnDate = DateTime.Now
             };
-            var response = await _httpClient.PutAsJsonAsync("/api/Rent/Return", request);
+            var response = await _httpClient.PutAsJsonAsync(_rentReturnUrl, request);
 
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         }

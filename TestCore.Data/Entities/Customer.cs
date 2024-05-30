@@ -10,6 +10,14 @@ namespace TestCore.Data.Entities
             ID = Guid.NewGuid();
         }
 
+        [Column("BusinessID")]
+        [Required]
+        public long BusinessID { get; set; }
+
+        [Column("Premium")]
+        [Required]
+        public bool Premium { get; set; }
+
         [Column("FullName")]
         [Required]
         [MaxLength(50)]

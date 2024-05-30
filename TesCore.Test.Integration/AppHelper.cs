@@ -5,7 +5,7 @@ namespace TesCore.Test.Integration
 {
     public static class AppHelper
     {
-        public static WebApplicationFactory<Program> GetAppWithSettings() 
+        public static WebApplicationFactory<Program> ConfigureApp() 
         {
             return new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>

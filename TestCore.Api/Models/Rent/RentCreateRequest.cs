@@ -5,10 +5,10 @@ namespace TestCore.Api.Models.Rent
     public class RentCreateRequest
     {
         [Required]
-        public Guid CustomerId { get; set; }
+        public long CustomerId { get; set; }
 
         [Required]
-        public Guid CarId { get; set; }
+        public long CarId { get; set; }
 
         [Required]
         [DataType(DataType.Date)]

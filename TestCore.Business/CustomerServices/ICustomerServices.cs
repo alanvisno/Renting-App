@@ -1,9 +1,10 @@
-﻿using TestCore.Data.Entities;
+﻿using TestCore.Data.DTO;
+using TestCore.Data.Entities;
 
 namespace TestCore.Business.CustomerServices
 {
     public interface ICustomerServices
     {
-        Task<List<Customer>> Search(string name);
+        Task<List<CustomerDTO>> Search(string name);
     }
 }

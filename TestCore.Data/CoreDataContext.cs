@@ -3,7 +3,7 @@ using TestCore.Data.Entities;
 
 namespace TestCore.Data
 {
-    public class CoreDataContext : DbContext
+    public class CoreDataContext : DbContext, ICoreDataContext
     {
 
         public CoreDataContext(DbContextOptions<CoreDataContext> options)

@@ -5,7 +5,7 @@ namespace TestCore.Api.Models.Rent
     public class RentReturnRequest
     {
         [Required]
-        public Guid RentId { get; set; }
+        public long RentId { get; set; }
 
         [Required]
         [DataType(DataType.Date)]

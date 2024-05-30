@@ -12,6 +12,10 @@ namespace TestCore.Data.Entities
             LogDate = DateTime.Now;
         }
 
+        [Column("BusinessID")]
+        [Required]
+        public long BusinessID { get; set; }
+
         [MaxLength(20)]
         [Column("Description")]
         [Required]
